@@ -7,6 +7,12 @@ MPRNet/Deraining/pretrained_models/model_deraining.pth
 # MSPFN
 MSPFN/model/MSPFN_pretrained/*
 
+# SPANet
+SPANet/logdir/
+
+# Google Drive
+Icon
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -151,7 +157,8 @@ cython_debug/
 .LSOverride
 
 # Icon must end with two \r
-Icon
+Icon
+
 
 # Thumbnails
 ._*

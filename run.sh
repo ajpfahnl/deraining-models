@@ -57,13 +57,16 @@ if [[ $1 == "setup" ]]; then
         cp RCDNet/Pretrained\ Model/SPA-Data/model_best.pt RCDNet/RCDNet_code/for_spa/experiment/RCDNet_spa/model/
         data_dir="RCDNet/RCDNet_code/for_spa/data/test/small"
         mkdir -p ${data_dir}/norain/ ${data_dir}/rain/
+
+        # SPANet
+        cp model-modifications/SPANet/*.py SPANet/
     fi
 
     if [[ $2 == "images" ]]; then
         # setup image directory
         mkdir -p images
         cd images
-        mkdir -p rainy clean output clean-orig clean-output
+        mkdir -p rainy clean output clean-orig rainy-orig
         cd output
         mkdir -p ${models[@]}
     fi
@@ -97,7 +100,8 @@ if [[ $model == "RCDNet" ]]; then
     fi
 
     if [[ $2 == "clean" ]]; then
-        rm -r ./RCDNet/RCDNet_code/for_spa/experiment/RCDNet_test/
+        rm -rf ./RCDNet/RCDNet_code/for_spa/experiment/RCDNet_test/
+        rm -rf ./RCDNet/RCDNet_code/for_spa/data/test/
         exit 0
     fi
 
@@ -133,4 +137,12 @@ if [[ $model == "RCDNet" ]]; then
     
     mv ../experiment/RCDNet_test/results/* ../../../../images/output/RCDNet/
 )
+fi
+
+# SPANet
+if [[ $model == "SPANet" ]]; then
+    printf "Run \`SPANet.ipynb\` in Google Colab. 
+    Ensure that this repository is in your Google Drive, and 
+    change the working directory to this folder's directory.
+"
 fi
