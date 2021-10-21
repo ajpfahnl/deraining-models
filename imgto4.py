@@ -19,7 +19,7 @@ def main():
         p = img_orig_dir.glob('*')
         for img_path in p:
             print(img_path)
-            img = cv2.imread(str(img_path))
+            img = cv2.imread(str(img_path), 1)
             if not isinstance(img, np.ndarray):
                 continue
             cols, rows, _ = img.shape
