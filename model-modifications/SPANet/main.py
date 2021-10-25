@@ -281,17 +281,21 @@ def run_test(ckp_name):
         pred = pred * 255
 
         rainy_fname = str(rainy_fname.name)
-        name_l = rainy_fname.split('-')
-        name_l[-2] = 'O'
-        out_fname = '-'.join(name_l)
-        name_l[-2] = 'Om'
-        outm_fname = '-'.join(name_l)
+        out_fname = rainy_fname
+
+        # Following commented out lines are for saving the rain mask
+
+        # name_l = rainy_fname.split('-')
+        # name_l[-2] = 'O'
+        # out_fname = '-'.join(name_l)
+        # name_l[-2] = 'Om'
+        # outm_fname = '-'.join(name_l)
 
         save_path = '../images/output/SPANet/'
         if not os.path.exists(save_path):
             print(f'Save path {save_path} does not exist')
         cv2.imwrite(save_path+out_fname, pred)
-        cv2.imwrite(save_path+outm_fname, mask)
+        # cv2.imwrite(save_path+outm_fname, mask)
         print(f'Saved to {save_path+out_fname}')
         bar.update(i+1)
     print(np.mean(ssim),np.mean(psnr))
