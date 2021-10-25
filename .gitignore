@@ -13,6 +13,7 @@ SPANet/logdir/
 # RCDNet
 RCDNet/RCDNet_code/for_spa/experiment/RCDNet_test/config.txt
 RCDNet/RCDNet_code/for_spa/experiment/RCDNet_test/log.txt
+RCDNet/RCDNet_code/for_spa/data/test/small
 
 # Google Drive
 Icon
