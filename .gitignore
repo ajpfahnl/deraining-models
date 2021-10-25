@@ -10,6 +10,10 @@ MSPFN/model/MSPFN_pretrained/*
 # SPANet
 SPANet/logdir/
 
+# RCDNet
+RCDNet/RCDNet_code/for_spa/experiment/RCDNet_test/config.txt
+RCDNet/RCDNet_code/for_spa/experiment/RCDNet_test/log.txt
+
 # Google Drive
 Icon
 
