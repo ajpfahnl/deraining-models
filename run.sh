@@ -1,7 +1,7 @@
 #!/bin/bash
 
 model=$1
-models=("MPRNet" "MSPFN" "RCDNet" "SPANet")
+models=("MPRNet" "MSPFN" "RCDNet" "SPANet" "ED")
 
 source ~/miniconda3/etc/profile.d/conda.sh
 conda deactivate
@@ -10,7 +10,7 @@ if [[ $1 == "" ]] ; then
     printf "usage:
     ./run.sh download
     ./run.sh setup [conda | condarm | models | images]
-    ./run.sh [MPRNet | MSPFN | RCDNet [gpu] [skipcopy]] [clean]\n"
+    ./run.sh [MPRNet | MSPFN | RCDNet [gpu] [skipcopy]] [clean] | SPANet | ED\n"
 fi
 
 if [[ $1 == "download" ]]; then
@@ -18,6 +18,7 @@ if [[ $1 == "download" ]]; then
     git clone https://github.com/hongwang01/RCDNet.git
     git clone https://github.com/kuijiang0802/MSPFN.git
     git clone https://github.com/stevewongv/SPANet.git
+    git clone https://github.com/tsingqguo/efficientderain.git ED
 fi
 
 # call setup to create directories
@@ -52,14 +53,15 @@ if [[ $1 == "setup" ]]; then
         https://drive.google.com/file/d/1nrjZtNs6AJYvfHi9TeCVTs50E57Fxgsc/view
         and move the 'epoch44\*' files into 'MSPFN/model/MSPFN_pretrained'.\n"
 
-        # RCDNet
-        mkdir -p RCDNet/RCDNet_code/for_spa/experiment/RCDNet_spa/model/
-        cp RCDNet/Pretrained\ Model/SPA-Data/model_best.pt RCDNet/RCDNet_code/for_spa/experiment/RCDNet_spa/model/
-        data_dir="RCDNet/RCDNet_code/for_spa/data/test/small"
-        mkdir -p ${data_dir}/norain/ ${data_dir}/rain/
-
         # SPANet
         cp model-modifications/SPANet/*.py SPANet/
+
+        # ED
+        cp model-modifications/ED/*.py model-modifications/ED/test.sh ED/
+        printf "Download the pretrained EfficientDerain (ED) models from
+        https://drive.google.com/file/d/1OBAIG4su6vIPEimTX7PNuQTxZDjtCUD8/view?usp=sharing
+        and move the entire 'models' folder into the 'ED' folder (remove the 'models'
+        folder if it exists.\n"
     fi
 
     if [[ $2 == "images" ]]; then
@@ -108,13 +110,20 @@ if [[ $model == "RCDNet" ]]; then
     if [[ $3 == "skipcopy" ]]; then
         printf ""
     else
-    data_dir="RCDNet/RCDNet_code/for_spa/data/test/small"
-    rm ${data_dir}/norain/*
-    rm ${data_dir}/rain/*
-    for img_path in ./images/rainy/*; do
-        convert_path=${data_dir}/rain/$(basename ${img_path%.*}).png
-        printf "\t$img_path --> $convert_path\n"
-        convert $img_path $convert_path
+        # create directories
+        mkdir -p RCDNet/RCDNet_code/for_spa/experiment/
+        data_dir="RCDNet/RCDNet_code/for_spa/data/test/small"
+        mkdir -p ${data_dir}/norain/ ${data_dir}/rain/
+
+        # clean image directories
+        rm ${data_dir}/norain/*
+        rm ${data_dir}/rain/*
+
+        # convert and move
+        for img_path in ./images/rainy/*; do
+            convert_path=${data_dir}/rain/$(basename ${img_path%.*}).png
+            printf "\t$img_path --> $convert_path\n"
+            convert $img_path $convert_path
     done
     fi
 
@@ -128,7 +137,7 @@ if [[ $model == "RCDNet" ]]; then
     python3 main.py --data_test RainHeavyTest  \
                     --ext img \
                     --scale 2 \
-                    --pre_train ../experiment/RCDNet_spa/model/model_best.pt \
+                    --pre_train ../../../Pretrained\ Model/rain100H/model_best.pt \
                     --model RCDNet \
                     --test_only \
                     --save_results \
@@ -145,4 +154,13 @@ if [[ $model == "SPANet" ]]; then
     Ensure that this repository is in your Google Drive, and 
     change the working directory to this folder's directory.
 "
+fi
+
+# ED
+if [[ $model == "ED" ]]; then
+(
+    conda activate ED
+    cd ED
+    sh test.sh
+)
 fi
