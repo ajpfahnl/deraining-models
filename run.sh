@@ -10,7 +10,7 @@ if [[ $1 == "" ]] ; then
     printf "usage:
     ./run.sh download
     ./run.sh setup [conda | condarm | models | images]
-    ./run.sh [MPRNet | MSPFN | RCDNet [gpu] [skipcopy]] [clean] | SPANet | ED\n"
+    ./run.sh [MPRNet | MSPFN | RCDNet [gpu] [skipcopy]] [clean] | SPANet | ED [gpu] \n"
 fi
 
 if [[ $1 == "download" ]]; then
@@ -159,8 +159,16 @@ fi
 # ED
 if [[ $model == "ED" ]]; then
 (
+    cpu='--no_gpu True'
+    if [[ $2 == "gpu" ]]; then
+        cpu=''
+    fi
     conda activate ED
     cd ED
-    sh test.sh
+    python ./validation.py \
+        --load_name "./models/v4_SPA/v4_SPA.pth" \
+        --save_name "../images/output/ED" \
+        --baseroot "../images" \
+        $cpu
 )
 fi
