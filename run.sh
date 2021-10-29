@@ -10,7 +10,7 @@ if [[ $1 == "" ]] ; then
     printf "usage:
     ./run.sh download
     ./run.sh setup [conda | condarm | models | images]
-    ./run.sh [MPRNet | MSPFN | RCDNet [gpu] [skipcopy]] [clean] | SPANet | ED [gpu] \n"
+    ./run.sh [MPRNet [gpu] | MSPFN | RCDNet [gpu] [skipcopy]] [clean] | SPANet | ED [gpu] \n"
 fi
 
 if [[ $1 == "download" ]]; then
@@ -80,7 +80,11 @@ if [[ $model == "MPRNet" ]]; then
 (
     conda activate MPRNet
     cd MPRNet
-    python3 demo_cpu.py --task Deraining --input_dir ../images/rainy/ --result_dir ../images/output/MPRNet
+    if [[ $2 == "gpu" ]]; then
+        python3 demo.py --task Deraining --input_dir ../images/rainy/ --result_dir ../images/output/MPRNet
+    else
+        python3 demo_cpu.py --task Deraining --input_dir ../images/rainy/ --result_dir ../images/output/MPRNet
+    fi
 )
 fi
 
