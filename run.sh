@@ -57,7 +57,7 @@ if [[ $1 == "setup" ]]; then
         cp model-modifications/SPANet/*.py SPANet/
 
         # ED
-        cp model-modifications/ED/*.py model-modifications/ED/test.sh ED/
+        cp model-modifications/ED/*.py ED/
         printf "Download the pretrained EfficientDerain (ED) models from
         https://drive.google.com/file/d/1OBAIG4su6vIPEimTX7PNuQTxZDjtCUD8/view?usp=sharing
         and move the entire 'models' folder into the 'ED' folder (remove the 'models'
