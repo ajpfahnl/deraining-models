@@ -120,10 +120,10 @@ if [[ $model == "RCDNet" ]]; then
         rm ${data_dir}/rain/*
 
         # convert and move
-        for img_path in ./images/rainy/*; do
+        for img_path in ./images/rainy/*.*; do
             convert_path=${data_dir}/rain/$(basename ${img_path%.*}).png
             printf "\t$img_path --> $convert_path\n"
-            convert $img_path $convert_path
+            python3 -c "import cv2; in_img = cv2.imread(\"${img_path}\"); cv2.imwrite(\"${convert_path}\", in_img)"
     done
     fi
 

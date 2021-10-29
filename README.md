@@ -9,7 +9,6 @@ __Exception__: SPANet is set up so that the model runs on Google Colab.
 ## Requirements
 This assumes 
  * A miniconda installation (try testing to see if `~/miniconda3/etc/profile.d/conda.sh` exists).
- * An ImageMagick installation which can be installed with `brew install imagemagick`. I'm using the `convert` utility to quickly convert .jpg images to .png for RCDNet.
 
 ## Setting up
 Here's a sample workflow using the `run.sh` script:
