@@ -84,8 +84,8 @@ if __name__ == "__main__":
     psnr_sum, psnr_ave, ssim_sum, ssim_ave, eval_cnt = 0, 0, 0, 0, 0
     
     # forward
-    for i, (true_input, true_target, height_origin, width_origin) in enumerate(test_loader):
-
+    for i, (true_input, true_target, height_origin, width_origin, file_name) in enumerate(test_loader):
+        file_name = os.path.basename(file_name[0])
         # To device
         if opt.no_gpu:
             true_input = true_input
@@ -106,7 +106,7 @@ if __name__ == "__main__":
         img_list = [true_input, fake_target, true_target]
         name_list = ['in', 'pred', 'gt']
         sample_name = '%d' % (i+1)
-        utils.save_sample_png(sample_folder = sample_folder, sample_name = '%d' % (i + 1), img_list = img_list, name_list = name_list, pixel_max_cnt = 255, height = height_origin, width = width_origin)
+        utils.save_sample_png(sample_folder = sample_folder, sample_name = '%d' % (i + 1), img_list = img_list, name_list = name_list, pixel_max_cnt = 255, height = height_origin, width = width_origin, original_name=file_name, only_pred=True)
         
         # Evaluation
         #psnr_sum = psnr_sum + utils.psnr(cv2.imread(sample_folder + '/' + sample_name + '_' + name_list[1] + '.png').astype(np.float32), cv2.imread(sample_folder + '/' + sample_name + '_' + name_list[2] + '.png').astype(np.float32))
@@ -117,13 +117,13 @@ if __name__ == "__main__":
         ssim_sum = ssim_sum + ssim(img_gt_recover, img_pred_recover, multichannel = True, data_range = 255) 
         eval_cnt = eval_cnt + 1
         
-    psnr_ave = psnr_sum / eval_cnt
-    ssim_ave = ssim_sum / eval_cnt
-    psnr_file = "./data/psnr_data.txt"
-    ssim_file = "./data/ssim_data.txt"
-    psnr_content = opt.load_name + ": " + str(psnr_ave) + "\n"
-    ssim_content = opt.load_name + ": " + str(ssim_ave) + "\n"
-    utils.text_save(content = psnr_content, filename = psnr_file)
-    utils.text_save(content = ssim_content, filename = ssim_file)
+    # psnr_ave = psnr_sum / eval_cnt
+    # ssim_ave = ssim_sum / eval_cnt
+    # psnr_file = "./data/psnr_data.txt"
+    # ssim_file = "./data/ssim_data.txt"
+    # psnr_content = opt.load_name + ": " + str(psnr_ave) + "\n"
+    # ssim_content = opt.load_name + ": " + str(ssim_ave) + "\n"
+    # utils.text_save(content = psnr_content, filename = psnr_file)
+    # utils.text_save(content = ssim_content, filename = ssim_file)
     
     

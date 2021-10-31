@@ -47,9 +47,10 @@ def load_dict(process_net, pretrained_net):
 # ----------------------------------------
 #    Validation and Sample at training
 # ----------------------------------------
-def save_sample_png(sample_folder, sample_name, img_list, name_list, pixel_max_cnt = 255, height = -1, width = -1):
+def save_sample_png(sample_folder, sample_name, img_list, name_list, pixel_max_cnt = 255, height = -1, width = -1, original_name=None, only_pred=False):
     # Save image one-by-one
-    for i in range(len(img_list)):
+    r = [1] if only_pred else range(len(img_list))
+    for i in r:
         img = img_list[i]
         # Recover normalization
         img = img * 255.0
@@ -62,8 +63,12 @@ def save_sample_png(sample_folder, sample_name, img_list, name_list, pixel_max_c
         if (height != -1) and (width != -1):
             img_copy = cv2.resize(img_copy, (width, height))
         # Save to certain path
-        save_img_name = sample_name + '_' + name_list[i] + '.png'
+        if original_name is None:
+            save_img_name = sample_name + '_' + name_list[i] + '.png'
+        else:
+            save_img_name = original_name
         save_img_path = os.path.join(sample_folder, save_img_name)
+        print(f"saving to {save_img_path}")
         cv2.imwrite(save_img_path, img_copy)
 
 def save_sample_png_test(sample_folder, sample_name, img_list, name_list, pixel_max_cnt = 255):
