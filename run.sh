@@ -2,6 +2,7 @@
 
 model=$1
 models=("MPRNet" "MSPFN" "RCDNet" "SPANet" "ED")
+models_versions=("MPRNet" "MSPFN" "RCDNet-spa" "RCDNet-rain100h" "SPANet" "ED-v4" "ED-v3")
 
 source ~/miniconda3/etc/profile.d/conda.sh
 conda deactivate
@@ -10,7 +11,7 @@ if [[ $1 == "" ]] ; then
     printf "usage:
     ./run.sh download
     ./run.sh setup [conda | condarm | models | images]
-    ./run.sh [MPRNet [gpu] | MSPFN | RCDNet [gpu] [skipcopy]] [clean] | SPANet | ED [gpu] \n"
+    ./run.sh [MPRNet [gpu] | MSPFN | RCDNet [gpu] [clean] | SPANet | ED [gpu] \n"
 fi
 
 if [[ $1 == "download" ]]; then
@@ -27,7 +28,7 @@ if [[ $1 == "setup" ]]; then
     # conda envs
     if [[ $2 == "conda" ]]; then
         for m in ${models[@]}; do
-            conda env create -f conda-envs/conda-${m}.yml
+            conda env create -f conda-envs/conda-${m}.yml || echo "${m} conda environment file does not exist"
         done
     fi
 
@@ -70,14 +71,17 @@ if [[ $1 == "setup" ]]; then
         cd images
         mkdir -p rainy clean output clean-orig rainy-orig
         cd output
-        mkdir -p ${models[@]}
+        mkdir -p ${models_versions[@]}
     fi
 )
 fi
 
+################################################################################
 # MPRNet
+################################################################################
 if [[ $model == "MPRNet" ]]; then
 (
+    printf "Running MPRNet\n"
     conda activate MPRNet
     cd MPRNet
     if [[ $2 == "gpu" ]]; then
@@ -88,54 +92,64 @@ if [[ $model == "MPRNet" ]]; then
 )
 fi
 
+################################################################################
 # MSPFN
+################################################################################
 if [[ $model == "MSPFN" ]]; then
 (
+    printf "Running MSPFN\n"
     conda activate MSPFN
     cd MSPFN/model/test/
     python3 test_MSPFN.py --input_dir ../../../images/rainy/ --result_dir ../../../images/output/MSPFN
 )
 fi
 
+################################################################################
 # RCDNet
-if [[ $model == "RCDNet" ]]; then
+################################################################################
+if [[ $model == "RCDNet" ]] || [[ $model == "RCDNet-spa" ]] || [[ $model == "RCDNet-rain100h" ]]; then
 (
-    cpu='--cpu'
-    if [[ $2 == "gpu" ]]; then
-        cpu=''
-    fi
-
     if [[ $2 == "clean" ]]; then
         rm -rf ./RCDNet/RCDNet_code/for_spa/experiment/RCDNet_test/
         rm -rf ./RCDNet/RCDNet_code/for_spa/data/test/
         exit 0
     fi
 
-    if [[ $3 == "skipcopy" ]]; then
-        printf ""
-    else
-        # create directories
-        mkdir -p RCDNet/RCDNet_code/for_spa/experiment/
-        data_dir="RCDNet/RCDNet_code/for_spa/data/test/small"
-        mkdir -p ${data_dir}/norain/ ${data_dir}/rain/
+    # create directories
+    mkdir -p RCDNet/RCDNet_code/for_spa/experiment/
+    data_dir="RCDNet/RCDNet_code/for_spa/data/test/small"
+    mkdir -p ${data_dir}/norain/ ${data_dir}/rain/
 
-        # clean image directories
-        rm ${data_dir}/norain/*
-        rm ${data_dir}/rain/*
+    # clean image directories
+    rm ${data_dir}/norain/*
+    rm ${data_dir}/rain/*
 
-        # convert and move
-        for img_path in ./images/rainy/*.*; do
-            convert_path=${data_dir}/rain/$(basename ${img_path%.*}).png
-            printf "\t$img_path --> $convert_path\n"
-            python3 -c "import cv2; in_img = cv2.imread(\"${img_path}\"); cv2.imwrite(\"${convert_path}\", in_img)"
+    # convert and move
+    for img_path in ./images/rainy/*.*; do
+        convert_path=${data_dir}/rain/$(basename ${img_path%.*}).png
+        printf "\t$img_path --> $convert_path\n"
+        python3 -c "import cv2; in_img = cv2.imread(\"${img_path}\"); cv2.imwrite(\"${convert_path}\", in_img)"
     done
-    fi
 
     # copy image as dummy data to norain
     cp ${data_dir}/rain/* ${data_dir}/norain/
 
     rm -f ${data_dir}/rain/.DS_Store
-    
+)
+fi
+
+if [[ $model == "RCDNet" ]]; then
+    ./run.sh RCDNet-rain100h $2
+    ./run.sh RCDNet-spa $2
+fi
+
+if [[ $model == "RCDNet-rain100h" ]]; then
+(
+    cpu='--cpu'
+    if [[ $2 == "gpu" ]]; then
+        cpu=''
+    fi
+    printf "Running RCDNet with rain100H weights\n"
     conda activate RCDNet
     cd RCDNet/RCDNet_code/for_spa/src/
     python3 main.py --data_test RainHeavyTest  \
@@ -147,12 +161,36 @@ if [[ $model == "RCDNet" ]]; then
                     --save_results \
                     --save RCDNet_test \
                     $cpu
-    
-    mv ../experiment/RCDNet_test/results/* ../../../../images/output/RCDNet/
+    mv ../experiment/RCDNet_test/results/* ../../../../images/output/RCDNet-rain100h/
 )
 fi
 
+if [[ $model == "RCDNet-spa" ]]; then
+(
+    cpu='--cpu'
+    if [[ $2 == "gpu" ]]; then
+        cpu=''
+    fi
+    printf "Running RCDNet with SPA data weights\n"
+    conda activate RCDNet
+    cd RCDNet/RCDNet_code/for_spa/src/
+    python3 main.py --data_test RainHeavyTest  \
+                    --ext img \
+                    --scale 2 \
+                    --pre_train ../../../Pretrained\ Model/SPA-Data/model_best.pt \
+                    --model RCDNet \
+                    --test_only \
+                    --save_results \
+                    --save RCDNet_test \
+                    $cpu
+    
+    mv ../experiment/RCDNet_test/results/* ../../../../images/output/RCDNet-spa/
+)
+fi
+
+################################################################################
 # SPANet
+################################################################################
 if [[ $model == "SPANet" ]]; then
     printf "Run \`SPANet.ipynb\` in Google Colab. 
     Ensure that this repository is in your Google Drive, and 
@@ -160,8 +198,15 @@ if [[ $model == "SPANet" ]]; then
 "
 fi
 
+################################################################################
 # ED
+################################################################################
 if [[ $model == "ED" ]]; then
+    ./run.sh ED-v3 $2
+    ./run.sh ED-v4 $2
+fi
+
+if [[ $model == "ED-v3" ]]; then
 (
     cpu='--no_gpu True'
     if [[ $2 == "gpu" ]]; then
@@ -169,10 +214,34 @@ if [[ $model == "ED" ]]; then
     fi
     conda activate ED
     cd ED
+
+    printf "Running EfficientDerain v3_SPA\n"
     python ./validation.py \
-        --load_name "./models/v4_SPA/v4_SPA.pth" \
-        --save_name "../images/output/ED" \
+        --load_name "./models/v3_SPA/v3_SPA.pth" \
+        --save_name "../images/output/ED-v3" \
         --baseroot "../images" \
         $cpu
+
+
+)
+fi
+
+if [[ $model == "ED-v4" ]]; then
+(
+    cpu='--no_gpu True'
+    if [[ $2 == "gpu" ]]; then
+        cpu=''
+    fi
+    conda activate ED
+    cd ED
+
+    printf "Running EfficientDerain v4_SPA\n"
+    python ./validation.py \
+        --load_name "./models/v4_SPA/v4_SPA.pth" \
+        --save_name "../images/output/ED-v4" \
+        --baseroot "../images" \
+        $cpu
+
+
 )
 fi
