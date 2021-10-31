@@ -161,7 +161,8 @@ if [[ $model == "RCDNet-rain100h" ]]; then
                     --save_results \
                     --save RCDNet_test \
                     $cpu
-    mv ../experiment/RCDNet_test/results/* ../../../../images/output/RCDNet-rain100h/
+    mv ../experiment/RCDNet_test/results/*_SR.png ../../../../images/output/RCDNet-rain100h/
+    rm -f ../experiment/RCDNet_test/results/*
 )
 fi
 
@@ -184,7 +185,8 @@ if [[ $model == "RCDNet-spa" ]]; then
                     --save RCDNet_test \
                     $cpu
     
-    mv ../experiment/RCDNet_test/results/* ../../../../images/output/RCDNet-spa/
+    mv ../experiment/RCDNet_test/results/*_SR.png ../../../../images/output/RCDNet-spa/
+    rm -f ../experiment/RCDNet_test/results/*
 )
 fi
 
