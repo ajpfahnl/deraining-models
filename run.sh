@@ -63,6 +63,10 @@ if [[ $1 == "setup" ]]; then
         https://drive.google.com/file/d/1OBAIG4su6vIPEimTX7PNuQTxZDjtCUD8/view?usp=sharing
         and move the entire 'models' folder into the 'ED' folder (remove the 'models'
         folder if it exists.\n"
+
+        # RCDNet
+        cp model-modifications/RCDNet/rainheavytest.py model-modifications/RCDNet/srdata.py ./RCDNet/RCDNet_code/for_spa/src/data
+        cp model-modifications/RCDNet/utility.py RCDNet/RCDNet_code/for_spa/src/
     fi
 
     if [[ $2 == "images" ]]; then
@@ -107,36 +111,6 @@ fi
 ################################################################################
 # RCDNet
 ################################################################################
-if [[ $model == "RCDNet" ]] || [[ $model == "RCDNet-spa" ]] || [[ $model == "RCDNet-rain100h" ]]; then
-(
-    if [[ $2 == "clean" ]]; then
-        rm -rf ./RCDNet/RCDNet_code/for_spa/experiment/RCDNet_test/
-        rm -rf ./RCDNet/RCDNet_code/for_spa/data/test/
-        exit 0
-    fi
-
-    # create directories
-    mkdir -p RCDNet/RCDNet_code/for_spa/experiment/
-    data_dir="RCDNet/RCDNet_code/for_spa/data/test/small"
-    mkdir -p ${data_dir}/norain/ ${data_dir}/rain/
-
-    # clean image directories
-    rm ${data_dir}/norain/*
-    rm ${data_dir}/rain/*
-
-    # convert and move
-    for img_path in ./images/rainy/*.*; do
-        convert_path=${data_dir}/rain/$(basename ${img_path%.*}).png
-        printf "\t$img_path --> $convert_path\n"
-        python3 -c "import cv2; in_img = cv2.imread(\"${img_path}\"); cv2.imwrite(\"${convert_path}\", in_img)"
-    done
-
-    # copy image as dummy data to norain
-    cp ${data_dir}/rain/* ${data_dir}/norain/
-
-    rm -f ${data_dir}/rain/.DS_Store
-)
-fi
 
 if [[ $model == "RCDNet" ]]; then
     ./run.sh RCDNet-rain100h $2
@@ -145,6 +119,8 @@ fi
 
 if [[ $model == "RCDNet-rain100h" ]]; then
 (
+    fcount=$(ls -l ./images/rainy/*.* | wc -l)
+    echo $fcount
     cpu='--cpu'
     if [[ $2 == "gpu" ]]; then
         cpu=''
@@ -152,6 +128,7 @@ if [[ $model == "RCDNet-rain100h" ]]; then
     printf "Running RCDNet with rain100H weights\n"
     conda activate RCDNet
     cd RCDNet/RCDNet_code/for_spa/src/
+    rm -f ../experiment/RCDNet_test/results/*
     python3 main.py --data_test RainHeavyTest  \
                     --ext img \
                     --scale 2 \
@@ -160,6 +137,7 @@ if [[ $model == "RCDNet-rain100h" ]]; then
                     --test_only \
                     --save_results \
                     --save RCDNet_test \
+                    --data_range 1-${fcount} \
                     $cpu
     mv ../experiment/RCDNet_test/results/*_SR.png ../../../../images/output/RCDNet-rain100h/
     rm -f ../experiment/RCDNet_test/results/*
@@ -168,6 +146,8 @@ fi
 
 if [[ $model == "RCDNet-spa" ]]; then
 (
+    fcount=$(ls -l ./images/rainy/*.* | wc -l)
+    echo $fcount
     cpu='--cpu'
     if [[ $2 == "gpu" ]]; then
         cpu=''
@@ -175,6 +155,7 @@ if [[ $model == "RCDNet-spa" ]]; then
     printf "Running RCDNet with SPA data weights\n"
     conda activate RCDNet
     cd RCDNet/RCDNet_code/for_spa/src/
+    rm -f ../experiment/RCDNet_test/results/*
     python3 main.py --data_test RainHeavyTest  \
                     --ext img \
                     --scale 2 \
@@ -183,6 +164,7 @@ if [[ $model == "RCDNet-spa" ]]; then
                     --test_only \
                     --save_results \
                     --save RCDNet_test \
+                    --data_range 1-${fcount} \
                     $cpu
     
     mv ../experiment/RCDNet_test/results/*_SR.png ../../../../images/output/RCDNet-spa/
