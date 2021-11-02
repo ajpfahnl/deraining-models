@@ -7,6 +7,8 @@ import argparse
 import sys
 from pathlib import Path
 from tqdm import tqdm
+import numpy as np
+import matplotlib.pyplot as plt
 
 class ImgCompare():
     models = ["MPRNet", "MSPFN", "RCDNet-spa", "RCDNet-rain100h", "SPANet", "ED-v4", "ED-v3"]
@@ -17,14 +19,16 @@ class ImgCompare():
         return img
     
     def path_from_stem(self, folder: Path, stem: str):
-        return list(folder.glob(f'{stem}.*'))[0]
+        return list(folder.glob(f'{stem}*'))[0]
 
-    def __init__(self, model: str):
+    def __init__(self, model: str, single: bool=False, progress_func=tqdm):
         if model not in self.models:
             models_str = ", ".join(self.models)
             print(f"Invalid model: {model}. Please choose from {models_str}")
             exit(1)
         self.model = model
+        self.single = single
+        self.progress_func = progress_func
 
         C_stems = {} # key: name, value: list of stems
         R_stems = {} # key: name, value: stem
@@ -36,7 +40,7 @@ class ImgCompare():
             img_name = "-".join([scene_name, view])
 
             if flag == 'R':
-                if scene_name in R_stems:
+                if img_name in R_stems:
                     R_stems[img_name].append(img_stem)
                 else:
                     R_stems[img_name] = [img_stem]
@@ -53,43 +57,70 @@ class ImgCompare():
         self.R_stems = R_stems
         self.P_stems = P_stems
 
-    def find_metrics(self):
-        avg_psnr_rainy_gt = 0
-        avg_psnr_derained_gt = 0
-        avg_ssim_rainy_gt = 0
-        avg_ssim_derained_gt = 0
+    def print_metrics(self, metrics):
+        avg_psnr_rainy_gt, avg_psnr_derained_gt, avg_ssim_rainy_gt, avg_ssim_derained_gt = metrics
+        print(f"                 PSNR    SSIM")
+        print(f"Rainy vs. GT:    {avg_psnr_rainy_gt:.2f}    {avg_ssim_rainy_gt:.2f}")
+        print(f"Derained vs. GT: {avg_psnr_derained_gt:.2f}    {avg_ssim_derained_gt:.2f}")
+
+
+    def find_metrics(self, display_groups=False):
+        print("Will display first and last image groupings for each scene")
+
+        # intialize average metrics for all scenes
+        metrics = np.zeros(4)
         count = 0
 
-        for name in self.R_stems:
-            for stem in tqdm(self.R_stems[name]):
+        for name in sorted(self.R_stems):
+
+            # initialize metrics for one scene
+            metrics_scene = np.zeros(4)
+            count_scene = 0
+
+            print(f'Processing {name}')
+            clean_path = self.path_from_stem(Path('./images/rainy/'), self.C_stems[name])
+
+            for stem in self.progress_func(self.R_stems[name]):
+                count += 1
+                count_scene += 1
+
                 rainy_path = self.path_from_stem(Path('./images/rainy/'), stem)
                 derained_path = self.path_from_stem(Path(f'./images/output/{self.model}/'), stem)
-                clean_path = self.path_from_stem(Path('./images/rainy/'), self.C_stems[name])
 
                 clean_img = self.load_image(str(clean_path))
                 rainy_img = self.load_image(str(rainy_path))
                 derained_img = self.load_image(str(derained_path))
 
-                avg_psnr_rainy_gt += cv2.PSNR(clean_img, rainy_img)
-                avg_psnr_derained_gt += cv2.PSNR(clean_img, derained_img)
-                avg_ssim_rainy_gt += ssim(clean_img, rainy_img, multichannel=True)
-                avg_ssim_derained_gt += ssim(clean_img, derained_img, multichannel=True)
-                count += 1
-                break
-        avg_psnr_rainy_gt /= count
-        avg_psnr_derained_gt /= count
-        avg_ssim_rainy_gt /= count
-        avg_ssim_derained_gt /= count
-        print(f"                 PSNR    SSIM")
-        print(f"Rainy vs. GT:    {avg_psnr_rainy_gt:.2f}    {avg_ssim_rainy_gt:.2f}")
-        print(f"Derained vs. GT: {avg_psnr_derained_gt:.2f}    {avg_ssim_derained_gt:.2f}")
+                metrics_scene[0] += cv2.PSNR(clean_img, rainy_img)
+                metrics_scene[1] += cv2.PSNR(clean_img, derained_img)
+                metrics_scene[2] += ssim(clean_img, rainy_img, multichannel=True)
+                metrics_scene[3] += ssim(clean_img, derained_img, multichannel=True)
+
+                if display_groups and count_scene in [1, len(self.R_stems[name])]:
+                    plt.imshow(np.hstack((clean_img, rainy_img, derained_img)))
+                    plt.show()
+                if self.single:
+                    break
+            metrics_scene /= count_scene
+            print(f'Metrics for scene {name}')
+            self.print_metrics(metrics_scene)
+
+            # update overall metrics
+            metrics += metrics_scene
+        
+        metrics /= count
+        print('####################')
+        print('OVERALL')
+        self.print_metrics(metrics)
+        print('####################')
 
 if __name__ == "__main__":
     models_str = ", ".join(ImgCompare.models)
     parser = argparse.ArgumentParser(description='Compare with PSNR and SSIM')
     parser.add_argument('model', type=str, help=f'Model whose outputs to test. Choose from {models_str}')
+    parser.add_argument('--single', action='store_true', help=f'Only process one image from each scene')
+    parser.add_argument('--display', action='store_true', help=f'Display first and last image groupings for each scene')
     args = parser.parse_args()
 
-    ic = ImgCompare(args.model)
-    ic.find_metrics()
-
+    ic = ImgCompare(args.model, args.single)
+    ic.find_metrics(display_groups=args.display)
