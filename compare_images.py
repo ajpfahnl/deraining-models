@@ -9,9 +9,11 @@ from pathlib import Path
 from tqdm import tqdm
 import numpy as np
 import matplotlib.pyplot as plt
+import re
 
 class ImgCompare():
     models = ["MPRNet", "MSPFN", "RCDNet-spa", "RCDNet-rain100h", "SPANet", "ED-v4", "ED-v3"]
+
     def load_image(self, path):
         img = cv2.imread(path)
         if not isinstance(img, np.ndarray):
@@ -34,9 +36,12 @@ class ImgCompare():
         R_stems = {} # key: name, value: stem
         P_stems = {} # key: name, value: stem
 
+        prog = re.compile(".*_[0-9]*-[0-9]*-.*-[RCP]-[0-9]*")
+
         for impath in Path(f'./images/output/{self.model}/').glob('*.png'):
             scene_name, view, _, flag, _= str(impath.name).split('-')
             img_stem = str(impath.stem) # e.g. Taitung_0-0-Webcam-R-264.png
+            img_stem = prog.match(img_stem).group(0)
             img_name = "-".join([scene_name, view])
 
             if flag == 'R':
@@ -64,12 +69,17 @@ class ImgCompare():
         print(f"Derained vs. GT: {avg_psnr_derained_gt:.2f}    {avg_ssim_derained_gt:.2f}")
 
 
-    def find_metrics(self, display_groups=False):
+    def find_metrics(self, display_groups=False, save=False):
         print("Will display first and last image groupings for each scene")
 
         # intialize average metrics for all scenes
         metrics = np.zeros(4)
         count = 0
+
+        # create metrics save file if specified
+        if save:
+            mfile = open(Path(f'./images/metrics/{self.model}.csv'), 'w')
+            mfile.write("Scene,PSNR_clean_v_rainy,PSNR_clean_v_derained,SSIM_clean_v_rainy,SSIM_clean_v_derained\n")
 
         for name in sorted(self.R_stems):
 
@@ -81,6 +91,8 @@ class ImgCompare():
             clean_path = self.path_from_stem(Path('./images/rainy/'), self.C_stems[name])
 
             for stem in self.progress_func(self.R_stems[name]):
+                metrics_frame = np.zeros(4)
+
                 count += 1
                 count_scene += 1
 
@@ -91,22 +103,28 @@ class ImgCompare():
                 rainy_img = self.load_image(str(rainy_path))
                 derained_img = self.load_image(str(derained_path))
 
-                metrics_scene[0] += cv2.PSNR(clean_img, rainy_img)
-                metrics_scene[1] += cv2.PSNR(clean_img, derained_img)
-                metrics_scene[2] += ssim(clean_img, rainy_img, multichannel=True)
-                metrics_scene[3] += ssim(clean_img, derained_img, multichannel=True)
+                metrics_frame[0] += cv2.PSNR(clean_img, rainy_img)
+                metrics_frame[1] += cv2.PSNR(clean_img, derained_img)
+                metrics_frame[2] += ssim(clean_img, rainy_img, multichannel=True)
+                metrics_frame[3] += ssim(clean_img, derained_img, multichannel=True)
+
+                metrics_scene += metrics_frame
+
+                if save:
+                    mfile.write(f'{stem},' + ','.join([f"{n:.2f}" for n in metrics_frame]) + '\n')
 
                 if display_groups and count_scene in [1, len(self.R_stems[name])]:
                     plt.imshow(np.hstack((clean_img, rainy_img, derained_img)))
                     plt.show()
                 if self.single:
                     break
+            # update overall metrics
+            metrics += metrics_scene
+
+            # generate scene metrics
             metrics_scene /= count_scene
             print(f'Metrics for scene {name}')
             self.print_metrics(metrics_scene)
-
-            # update overall metrics
-            metrics += metrics_scene
         
         metrics /= count
         print('####################')
