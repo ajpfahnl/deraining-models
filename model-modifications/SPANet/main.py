@@ -95,7 +95,7 @@ class Session:
         if train_mode:
             dataset = TrainValDataset(dataset_name)
         else:
-            dataset = TestDataset(img_dir, nogt=False)
+            dataset = TestDataset(img_dir, nogt=True)
         self.dataloaders[dataset_name] = DataLoader(dataset, batch_size=self.batch_size, shuffle=self.shuffle, num_workers=self.num_workers, drop_last=True)
         if train_mode:
             return iter(self.dataloaders[dataset_name]), dataset
@@ -259,8 +259,8 @@ def run_test(ckp_name):
     sess.outs = -1
     dt, ds = sess.get_dataloader(sess.test_data_path, sess.img_dir, train_mode=False)
 
-    ssim = []
-    psnr = []
+    # ssim = []
+    # psnr = []
 
     widgets = [progressbar.Percentage(),progressbar.Bar(),progressbar.ETA()]
     bar = progressbar.ProgressBar(widgets=widgets,maxval=len(dt)).start()
@@ -273,23 +273,24 @@ def run_test(ckp_name):
         mask = sess.heatmap(mask)
         mask = np.transpose(mask[0], (1, 2, 0))
         pred = np.transpose(pred.numpy(), (1, 2, 0))
-        B = np.transpose(B.numpy(), (1, 2, 0))
+        # B = np.transpose(B.numpy(), (1, 2, 0))
         pred = np.clip(pred, 0, 1)
-        B = np.clip(B, 0, 1)    
-        ssim.append(ms.structural_similarity(pred,B,multichannel=True))
-        psnr.append(ms.peak_signal_noise_ratio(pred,B))
-        pred = pred * 255
+        # B = np.clip(B, 0, 1)    
 
         rainy_fname = str(rainy_fname.name)
         out_fname = rainy_fname
 
         # Following commented out lines are for saving the rain mask
 
+        # ssim.append(ms.structural_similarity(pred,B,multichannel=True))
+        # psnr.append(ms.peak_signal_noise_ratio(pred,B))
         # name_l = rainy_fname.split('-')
         # name_l[-2] = 'O'
         # out_fname = '-'.join(name_l)
         # name_l[-2] = 'Om'
         # outm_fname = '-'.join(name_l)
+
+        pred = pred * 255
 
         save_path = '../images/output/SPANet/'
         if not os.path.exists(save_path):
@@ -298,7 +299,7 @@ def run_test(ckp_name):
         # cv2.imwrite(save_path+outm_fname, mask)
         print(f'Saved to {save_path+out_fname}')
         bar.update(i+1)
-    print(np.mean(ssim),np.mean(psnr))
+    # print(np.mean(ssim),np.mean(psnr))
 
 
 

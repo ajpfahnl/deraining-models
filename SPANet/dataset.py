@@ -55,26 +55,24 @@ class TestDataset(Dataset):
         self.root_dir = dir
         self.file_num = 0
         self.mat_files = []
-        for img_path in sorted((dir / "rainy").glob('*')):
-            img = cv2.imread(str(img_path), 1)
-            if isinstance(img, np.ndarray):
-                self.file_num += 1
-                self.mat_files.append(img_path)
+        for img_path in sorted((dir / "rainy").glob('*.*')):
+            #img = cv2.imread(str(img_path), 1)
+            #if isinstance(img, np.ndarray):
+            self.file_num += 1
+            self.mat_files.append(img_path)
         
         self.mat_files_gt = []
         self.gtcount = 0
         if not nogt:
-            for img_path in sorted((dir / "clean").glob('*')):
-                img = cv2.imread(str(img_path), 1)
-                if isinstance(img, np.ndarray):
-                    self.mat_files_gt.append(img_path)
-                    self.gtcount += 1
+            for img_path in sorted((dir / "clean").glob('*.*')):
+                # img = cv2.imread(str(img_path), 1)
+                # if isinstance(img, np.ndarray):
+                self.mat_files_gt.append(img_path)
+                self.gtcount += 1
             if self.gtcount != self.file_num:
                 print('[ERROR] rainy and ground truth file counts don\'t match')
                 exit(1)
         print(f'Test dataset initialized with {self.file_num} rainy and {self.gtcount} GTs.')
-        for mf, mfgt in zip(self.mat_files, self.mat_files_gt):
-            print(f'\t{mf}\t{mfgt}')
         
     def __len__(self):
         return self.file_num
@@ -85,7 +83,7 @@ class TestDataset(Dataset):
         O = np.transpose(O, (2, 0, 1)).astype(np.float32) / 255.0 
         
         if self.nogt:
-            B = None
+            B = np.array(0)
         else:
             gt_fname = self.mat_files_gt[idx % self.file_num]
             B = cv2.imread(str(gt_fname), 1)
