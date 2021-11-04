@@ -2,6 +2,7 @@
 import cv2
 import matplotlib.pyplot as plt
 from skimage.metrics import structural_similarity as ssim
+from skimage.metrics import peak_signal_noise_ratio as psnr
 import numpy as np
 import argparse
 import sys
@@ -68,6 +69,10 @@ class ImgCompare():
         print(f"Rainy vs. GT:    {avg_psnr_rainy_gt:.2f}    {avg_ssim_rainy_gt:.2f}")
         print(f"Derained vs. GT: {avg_psnr_derained_gt:.2f}    {avg_ssim_derained_gt:.2f}")
 
+    def write_metrics(self, file, row_name: str, metrics: np.ndarray):
+        file.write(f'{row_name},' + ','.join([f"{n:.2f}" for n in metrics]) + '\n')
+        file.flush() 
+
 
     def find_metrics(self, display_groups=False, save=False):
         print("Will display first and last image groupings for each scene")
@@ -79,7 +84,17 @@ class ImgCompare():
         # create metrics save file if specified
         if save:
             mfile = open(Path(f'./images/metrics/{self.model}.csv'), 'w')
-            mfile.write("Scene,PSNR_clean_v_rainy,PSNR_clean_v_derained,SSIM_clean_v_rainy,SSIM_clean_v_derained\n")
+            mfile.write("Scene_frame,PSNR_clean_v_rainy,PSNR_clean_v_derained,SSIM_clean_v_rainy,SSIM_clean_v_derained\n")
+
+            oscenefile = open(Path(f'./images/metrics/{self.model}_by_scene.csv'), 'w')
+            oscenefile.write("Scene,avg_PSNR_clean_v_rainy,avg_PSNR_clean_v_derained,avg_SSIM_clean_v_rainy,avg_SSIM_clean_v_derained\n")
+
+            ofile_path = Path(f'./images/metrics/overall.csv')
+            if not ofile_path.exists():
+                ofile = open(ofile_path, 'a')
+                ofile.write("Model,avg_PSNR_clean_v_rainy,avg_PSNR_clean_v_derained,avg_SSIM_clean_v_rainy,avg_SSIM_clean_v_derained\n")
+            else:
+                ofile = open(ofile_path, 'a') 
 
         for name in sorted(self.R_stems):
 
@@ -99,19 +114,19 @@ class ImgCompare():
                 rainy_path = self.path_from_stem(Path('./images/rainy/'), stem)
                 derained_path = self.path_from_stem(Path(f'./images/output/{self.model}/'), stem)
 
-                clean_img = self.load_image(str(clean_path))
-                rainy_img = self.load_image(str(rainy_path))
-                derained_img = self.load_image(str(derained_path))
+                clean_img = self.load_image(str(clean_path)) / 255.0
+                rainy_img = self.load_image(str(rainy_path)) / 255.0
+                derained_img = self.load_image(str(derained_path)) / 255.0
 
-                metrics_frame[0] += cv2.PSNR(clean_img, rainy_img)
-                metrics_frame[1] += cv2.PSNR(clean_img, derained_img)
+                metrics_frame[0] += psnr(clean_img, rainy_img)
+                metrics_frame[1] += psnr(clean_img, derained_img)
                 metrics_frame[2] += ssim(clean_img, rainy_img, multichannel=True)
                 metrics_frame[3] += ssim(clean_img, derained_img, multichannel=True)
 
                 metrics_scene += metrics_frame
 
                 if save:
-                    mfile.write(f'{stem},' + ','.join([f"{n:.2f}" for n in metrics_frame]) + '\n')
+                    self.write_metrics(mfile, stem, metrics_frame)
 
                 if display_groups and count_scene in [1, len(self.R_stems[name])]:
                     plt.imshow(np.hstack((clean_img, rainy_img, derained_img)))
@@ -125,12 +140,18 @@ class ImgCompare():
             metrics_scene /= count_scene
             print(f'Metrics for scene {name}')
             self.print_metrics(metrics_scene)
+
+            if save:
+                self.write_metrics(oscenefile, name, metrics_scene)
         
         metrics /= count
         print('####################')
         print('OVERALL')
         self.print_metrics(metrics)
         print('####################')
+
+        if save:
+            self.write_metrics(ofile, self.model, metrics)
 
 if __name__ == "__main__":
     models_str = ", ".join(ImgCompare.models)
