@@ -24,7 +24,7 @@ class ImgCompare():
     def path_from_stem(self, folder: Path, stem: str):
         return list(folder.glob(f'{stem}*'))[0]
 
-    def __init__(self, model: str, single: bool=False, progress_func=tqdm):
+    def __init__(self, model: str, single: bool=False, progress_func=tqdm, particulars=None):
         if model not in self.models:
             models_str = ", ".join(self.models)
             print(f"Invalid model: {model}. Please choose from {models_str}")
@@ -41,9 +41,12 @@ class ImgCompare():
 
         for impath in Path(f'./images/output/{self.model}/').glob('*.png'):
             scene_name, view, _, flag, _= str(impath.name).split('-')
-            img_stem = str(impath.stem) # e.g. Taitung_0-0-Webcam-R-264.png
-            img_stem = prog.match(img_stem).group(0)
-            img_name = "-".join([scene_name, view])
+            img_stem = str(impath.stem) # e.g. Taitung_0-0-Webcam-R-264_x2_SR.png
+            img_stem = prog.match(img_stem).group(0) # e.g. Taitung_0-0-Webcam-R-264
+            img_name = "-".join([scene_name, view]) # e.g. Taitung_0-0
+
+            if (particulars is not None) and (img_name not in particulars):
+                continue
 
             if flag == 'R':
                 if img_name in R_stems:
@@ -155,12 +158,16 @@ class ImgCompare():
 
 if __name__ == "__main__":
     models_str = ", ".join(ImgCompare.models)
-    parser = argparse.ArgumentParser(description='Compare with PSNR and SSIM')
+    parser = argparse.ArgumentParser(description="Compare with PSNR and SSIM. Example command:"
+        "./compare_images.py ED-v3 --single --save -p Cordele_0-0,Base_Cam_0-0,Hualien_0-0,Hualien_0-2,Hualien_0-3,Marunuma_Alt_0-0,Marunuma_Alt_0-1,Geiranger_0-0,Geiranger_0-1,Miami_County_0-0,Fort_Lauderdale_1-0,Fort_Lauderdale_1-1"
+    )
     parser.add_argument('model', type=str, help=f'Model whose outputs to test. Choose from {models_str}')
     parser.add_argument('--single', action='store_true', help=f'Only process one image from each scene')
     parser.add_argument('--display', action='store_true', help=f'Display first and last image groupings for each scene')
     parser.add_argument('--save', action='store_true', help=f'Save metrics to csv files in ./images/metrics/')
+    parser.add_argument('-p', '--particular', type=str, help='Particular scenes to parse')
     args = parser.parse_args()
+    particulars = args.particular.split(',')
 
-    ic = ImgCompare(args.model, args.single)
+    ic = ImgCompare(args.model, args.single, particulars=particulars)
     ic.find_metrics(display_groups=args.display, save=args.save)
