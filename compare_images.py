@@ -70,8 +70,8 @@ class ImgCompare():
         print(f"Derained vs. GT: {avg_psnr_derained_gt:.2f}    {avg_ssim_derained_gt:.2f}")
 
     def write_metrics(self, file, row_name: str, metrics: np.ndarray):
-        file.write(f'{row_name},' + ','.join([f"{n:.2f}" for n in metrics]) + '\n')
-        file.flush() 
+        file.write(f'{row_name},' + ','.join([f"{n}" for n in metrics]) + '\n')
+        file.flush()
 
 
     def find_metrics(self, display_groups=False, save=False):
@@ -159,7 +159,8 @@ if __name__ == "__main__":
     parser.add_argument('model', type=str, help=f'Model whose outputs to test. Choose from {models_str}')
     parser.add_argument('--single', action='store_true', help=f'Only process one image from each scene')
     parser.add_argument('--display', action='store_true', help=f'Display first and last image groupings for each scene')
+    parser.add_argument('--save', action='store_true', help=f'Save metrics to csv files in ./images/metrics/')
     args = parser.parse_args()
 
     ic = ImgCompare(args.model, args.single)
-    ic.find_metrics(display_groups=args.display)
+    ic.find_metrics(display_groups=args.display, save=args.save)
