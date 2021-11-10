@@ -37,7 +37,7 @@ class ImgCompare():
         R_stems = {} # key: name, value: stem
         P_stems = {} # key: name, value: stem
 
-        prog = re.compile(".*_[0-9]*-[0-9]*-.*-[RCP]-[0-9]*")
+        prog = re.compile(".*-[0-9]*-.*-[RCP]-[0-9]*")
 
         for impath in Path(f'./images/output/{self.model}/').glob('*.png'):
             scene_name, view, _, flag, _= str(impath.name).split('-')
