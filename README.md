@@ -21,15 +21,20 @@ Here's a sample workflow using the `run.sh` script:
  7. `./run.sh [MPRNet | MSPFN | RCDNet | SPANet | ED]`: Run the SOTAs.
  8. View the derained images in the `images/output/[model]`.
 
- To compare images with SSIM and PSNR, use the [compare_images.py](compare_images.py) program.
- ```
- Compare with PSNR and SSIM
+To compare images with SSIM and PSNR, use the [compare_images.py](compare_images.py) program.
+```
+usage: compare_images.py [-h] [--single] [--display] [--save] [-p PARTICULAR] model
+
+Compare with PSNR and SSIM. Example command:./compare_images.py ED-v3 --single --save -p Cordele_0-0,Base_Cam_0-0,Hualien_0-0,Hualien_0-2,Hualien_0-3,Marunuma_Alt_0-0,Marunuma_Alt_0-1,Geiranger_0-0,Geiranger_0-1,Miami_County_0-0,Fort_Lauderdale_1-0,Fort_Lauderdale_1-1
 
 positional arguments:
-  imgbase     Basename of image path in images/output/[model]/[imgbase].png suffix.
+  model                 Model whose outputs to test. Choose from MPRNet, MSPFN, RCDNet-spa, RCDNet-rain100h, SPANet, ED-v4, ED-v3
 
 optional arguments:
-  -h, --help  show this help message and exit
-  --self      Compare to input.
- ```
-For example, to measure compare the outputs of the models on `1.jpg` to the input itself, run `python3 compare_images.py --self 1`. If there was a clean image to compare to, we would omit the `--self` option.
+  -h, --help            show this help message and exit
+  --single              Only process one image from each scene
+  --display             Display first and last image groupings for each scene
+  --save                Save metrics to csv files in ./images/metrics/ (create this directory first)
+  -p PARTICULAR, --particular PARTICULAR
+                        Particular scenes to parse separated by commas
+```
