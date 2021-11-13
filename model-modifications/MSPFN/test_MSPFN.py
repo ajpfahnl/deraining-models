@@ -32,6 +32,7 @@ if not os.path.exists(save_path):
 num =1
 for f in file:
     pic_path = os.path.join(img_path, f)
+    print(f)
     file_name = f
     img = cv2.imread(pic_path)
     try:
