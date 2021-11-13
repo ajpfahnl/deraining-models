@@ -11,6 +11,6 @@ for scene_dir in ${dir}*/; do
 done
 
 rm ./images/rainy-orig/*-P-*.png
-python3 imgto4.py
+python3 preprocess.py
 
 ( cd images; rmdir clean; ln -s rainy clean )
