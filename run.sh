@@ -70,12 +70,11 @@ if [[ $1 == "setup" ]]; then
         cp model-modifications/RCDNet/utility.py RCDNet/RCDNet_code/for_spa/src/
 
         # HRR
+        mkdir ./HRR/ckpt
+        cp ./model-modifications/HRR/test.py HRR/
         printf "Download the pretrained HeavyRainRemovel model here
         https://www.dropbox.com/s/h8x6xl6epc45ngn/HeavyRain-stage2-2019-05-11-76_ckpt.pth.tar?dl=0
-        then move 'HeavyRain-stage2-2019-05-11-76_ckpt.pth.tar' into the HRR/ folder and untar with
-
-            tar -xvf HRR/HeavyRain-stage2-2019-05-11-76_ckpt.pth.tar 
-        \n"
+        then move 'HeavyRain-stage2-2019-05-11-76_ckpt.pth.tar' into the HRR/.ckpt folder\n"
     fi
 
     if [[ $2 == "images" ]]; then
