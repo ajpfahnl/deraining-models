@@ -64,14 +64,14 @@ if [[ $1 == "setup" ]]; then
         printf "Download the pretrained EfficientDerain (ED) models from
         https://drive.google.com/file/d/1OBAIG4su6vIPEimTX7PNuQTxZDjtCUD8/view?usp=sharing
         and move the entire 'models' folder into the 'ED' folder (remove the 'models'
-        folder if it exists.\n"
+        folder if it exists)\n"
 
         # RCDNet
         cp model-modifications/RCDNet/rainheavytest.py model-modifications/RCDNet/srdata.py ./RCDNet/RCDNet_code/for_spa/src/data
         cp model-modifications/RCDNet/utility.py RCDNet/RCDNet_code/for_spa/src/
 
         # HRR
-        mkdir -p ./HRR/ckpt
+        mkdir -p ./HRR/.ckpt
         cp ./model-modifications/HRR/test.py HRR/
         printf "Download the pretrained HeavyRainRemovel model from
         https://www.dropbox.com/s/h8x6xl6epc45ngn/HeavyRain-stage2-2019-05-11-76_ckpt.pth.tar?dl=0
