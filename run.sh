@@ -1,8 +1,8 @@
 #!/bin/bash
 
 model=$1
-models=("MPRNet" "MSPFN" "RCDNet" "SPANet" "ED")
-models_versions=("MPRNet" "MSPFN" "RCDNet-spa" "RCDNet-rain100h" "SPANet" "ED-v4" "ED-v3")
+models=("MPRNet" "MSPFN" "RCDNet" "SPANet" "ED" "HRR")
+models_versions=("MPRNet" "MSPFN" "RCDNet-spa" "RCDNet-rain100h" "SPANet" "ED-v4" "ED-v3" "HRR")
 
 source ~/miniconda3/etc/profile.d/conda.sh
 conda deactivate
@@ -20,6 +20,7 @@ if [[ $1 == "download" ]]; then
     git clone https://github.com/kuijiang0802/MSPFN.git
     git clone https://github.com/stevewongv/SPANet.git
     git clone https://github.com/tsingqguo/efficientderain.git ED
+    git clone https://github.com/liruoteng/HeavyRainRemoval.git HRR
 fi
 
 # call setup to create directories
@@ -67,6 +68,14 @@ if [[ $1 == "setup" ]]; then
         # RCDNet
         cp model-modifications/RCDNet/rainheavytest.py model-modifications/RCDNet/srdata.py ./RCDNet/RCDNet_code/for_spa/src/data
         cp model-modifications/RCDNet/utility.py RCDNet/RCDNet_code/for_spa/src/
+
+        # HRR
+        printf "Download the pretrained HeavyRainRemovel model here
+        https://www.dropbox.com/s/h8x6xl6epc45ngn/HeavyRain-stage2-2019-05-11-76_ckpt.pth.tar?dl=0
+        then move 'HeavyRain-stage2-2019-05-11-76_ckpt.pth.tar' into the HRR/ folder and untar with
+
+            tar -xvf HRR/HeavyRain-stage2-2019-05-11-76_ckpt.pth.tar 
+        \n"
     fi
 
     if [[ $2 == "images" ]]; then
@@ -227,5 +236,16 @@ if [[ $model == "ED-v4" ]]; then
         $cpu
 
 
+)
+fi
+
+################################################################################
+# HeavyRainRemoval
+################################################################################
+if [[ $model == "HRR" ]]; then
+(
+    conda activate HRR
+    cd HRR
+    python test.py
 )
 fi
