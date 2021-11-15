@@ -72,6 +72,8 @@ class Tester(Base.Base):
 
                 # adjust image size (due to memory limitation)
                 (h, w, c) = rain_image.shape
+                h_old = h
+                w_old = w
                 if h > 800 or w > 800:
                     h = h / 2
                     w = w / 2
@@ -101,6 +103,7 @@ class Tester(Base.Base):
                 painter1 = torch.cat([input_var, self.clean_out, recons], dim=3)
                 painter2 = torch.cat([self.trans_out, self.st_out, self.atm_out], dim=3)
                 painter = torch.cat([painter1, painter2], dim=2)
+                out_img = resize(out_img, [h_old, w_old])
                 write_image(out_img, single_dir + self.file_list[i])
                 # write_tensor(painter, outdir + self.file_list[i])
 
