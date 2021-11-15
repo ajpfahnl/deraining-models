@@ -11,7 +11,7 @@ if [[ $1 == "" ]] ; then
     printf "usage:
     ./run.sh download
     ./run.sh setup [conda | condarm | models | images]
-    ./run.sh [MPRNet [gpu] | MSPFN | RCDNet [gpu] [clean] | SPANet | ED [gpu] \n"
+    ./run.sh [MPRNet [gpu] | MSPFN | RCDNet [gpu] [clean] | SPANet | ED [gpu] | HRR | DGNL \n"
 fi
 
 if [[ $1 == "download" ]]; then

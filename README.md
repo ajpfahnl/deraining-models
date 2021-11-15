@@ -18,7 +18,7 @@ Here's a sample workflow using the `run.sh` script:
  4. `./run.sh setup images`: Set up the testing image directories.
  5. Add rainy images to `images/rainy-orig` and, optionally, clean images to `images/clean-orig`. You can try testing with `1.jpg` in [sample_images](sample_images).
  6. `./preprocess.py` to convert images to widths and heights of multiples of 4.
- 7. `./run.sh [MPRNet | MSPFN | RCDNet | SPANet | ED]`: Run the SOTAs.
+ 7. `./run.sh [MPRNet | MSPFN | RCDNet | SPANet | ED | HRR | DGNL]`: Run the SOTAs.
  8. View the derained images in the `images/output/[model]`.
 
 To compare images with SSIM and PSNR, use the [compare_images.py](compare_images.py) program.
