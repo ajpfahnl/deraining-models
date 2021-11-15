@@ -1,8 +1,8 @@
 #!/bin/bash
 
 model=$1
-models=("MPRNet" "MSPFN" "RCDNet" "SPANet" "ED" "HRR")
-models_versions=("MPRNet" "MSPFN" "RCDNet-spa" "RCDNet-rain100h" "SPANet" "ED-v4" "ED-v3" "HRR")
+models=("MPRNet" "MSPFN" "RCDNet" "SPANet" "ED" "HRR" "DGNL")
+models_versions=("MPRNet" "MSPFN" "RCDNet-spa" "RCDNet-rain100h" "SPANet" "ED-v4" "ED-v3" "HRR" "DGNL")
 
 source ~/miniconda3/etc/profile.d/conda.sh
 conda deactivate
@@ -21,6 +21,7 @@ if [[ $1 == "download" ]]; then
     git clone https://github.com/stevewongv/SPANet.git
     git clone https://github.com/tsingqguo/efficientderain.git ED
     git clone https://github.com/liruoteng/HeavyRainRemoval.git HRR
+    git clone https://github.com/xw-hu/DGNL-Net.git DGNL
 fi
 
 # call setup to create directories
@@ -70,11 +71,18 @@ if [[ $1 == "setup" ]]; then
         cp model-modifications/RCDNet/utility.py RCDNet/RCDNet_code/for_spa/src/
 
         # HRR
-        mkdir ./HRR/ckpt
+        mkdir -p ./HRR/ckpt
         cp ./model-modifications/HRR/test.py HRR/
-        printf "Download the pretrained HeavyRainRemovel model here
+        printf "Download the pretrained HeavyRainRemovel model from
         https://www.dropbox.com/s/h8x6xl6epc45ngn/HeavyRain-stage2-2019-05-11-76_ckpt.pth.tar?dl=0
         then move 'HeavyRain-stage2-2019-05-11-76_ckpt.pth.tar' into the HRR/.ckpt folder\n"
+
+        # DGNL
+        cp ./model-modifications/DGNL/infer.py DGNL/
+        printf "OPTIONALLY download the pretrained DGNL models from
+        https://drive.google.com/drive/folders/1BzLzZZFhz2EZyK7HmWPQzZmbxJudS_zJ?usp=sharing
+        then move 4000.pth into ./ckpt/DGNLNet/ and 60000.pth into ./ckpt/DGNLNet_fast/.
+        They are already included in this repo\n"
     fi
 
     if [[ $2 == "images" ]]; then
@@ -246,5 +254,17 @@ if [[ $model == "HRR" ]]; then
     conda activate HRR
     cd HRR
     python test.py
+)
+fi
+
+################################################################################
+# DGNL
+################################################################################
+
+if [[ $model == "DGNL" ]]; then
+(
+    conda activate DGNL
+    cd DGNL
+    python infer.py
 )
 fi
