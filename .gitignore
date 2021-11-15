@@ -19,8 +19,12 @@ RCDNet/RCDNet_code/for_spa/experiment/RCDNet_test/
 # ED
 models/
 
+# HRR
+HRR/.ckpt
+
 # Google Drive
-Icon
+Icon
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
