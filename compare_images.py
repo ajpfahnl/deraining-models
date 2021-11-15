@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import re
 
 class ImgCompare():
-    models = ["MPRNet", "MSPFN", "RCDNet-spa", "RCDNet-rain100h", "SPANet", "ED-v4", "ED-v3", "HRR", "DGNL"]
+    models = ["MPRNet", "MSPFN", "RCDNet-spa", "RCDNet-rain100h", "SPANet", "ED-v4", "ED-v3", "HRR", "DGNL", "ED-v3rain100h", "ED-v4rain100h", "ED-v3rain1400", "ED-v4rain1400"]
 
     def load_image(self, path):
         img = cv2.imread(path)

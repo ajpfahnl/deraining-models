@@ -2,7 +2,7 @@
 
 model=$1
 models=("MPRNet" "MSPFN" "RCDNet" "SPANet" "ED" "HRR" "DGNL")
-models_versions=("MPRNet" "MSPFN" "RCDNet-spa" "RCDNet-rain100h" "SPANet" "ED-v4" "ED-v3" "HRR" "DGNL")
+models_versions=("MPRNet" "MSPFN" "RCDNet-spa" "RCDNet-rain100h" "SPANet" "ED-v4" "ED-v3" "ED-v3rain100h" "ED-v4rain100h" "ED-v3rain1400" "ED-v4rain1400" "HRR" "DGNL")
 
 source ~/miniconda3/etc/profile.d/conda.sh
 conda deactivate
@@ -204,6 +204,11 @@ fi
 if [[ $model == "ED" ]]; then
     ./run.sh ED-v3 $2
     ./run.sh ED-v4 $2
+
+    ./run.sh ED-v3rain100h $2
+    ./run.sh ED-v4rain100h $2
+    ./run.sh ED-v3rain1400 $2
+    ./run.sh ED-v4rain1400 $2
 fi
 
 if [[ $model == "ED-v3" ]]; then
@@ -239,6 +244,82 @@ if [[ $model == "ED-v4" ]]; then
     python ./validation.py \
         --load_name "./models/v4_SPA/v4_SPA.pth" \
         --save_name "../images/output/ED-v4" \
+        --baseroot "../images" \
+        $cpu
+
+
+)
+fi
+if [[ $model == "ED-v3rain100h" ]]; then
+(
+    cpu='--no_gpu True'
+    if [[ $2 == "gpu" ]]; then
+        cpu=''
+    fi
+    conda activate ED
+    cd ED
+
+    printf "Running EfficientDerain v3_rain100H\n"
+    python ./validation.py \
+        --load_name "./models/v3_rain100H/v3_rain100H.pth" \
+        --save_name "../images/output/ED-v3rain100h" \
+        --baseroot "../images" \
+        $cpu
+
+
+)
+fi
+if [[ $model == "ED-v4rain100h" ]]; then
+(
+    cpu='--no_gpu True'
+    if [[ $2 == "gpu" ]]; then
+        cpu=''
+    fi
+    conda activate ED
+    cd ED
+
+    printf "Running EfficientDerain v4_rain100H\n"
+    python ./validation.py \
+        --load_name "./models/v4_rain100H/v4_rain100H.pth" \
+        --save_name "../images/output/ED-v4rain100h" \
+        --baseroot "../images" \
+        $cpu
+
+
+)
+fi
+if [[ $model == "ED-v3rain1400" ]]; then
+(
+    cpu='--no_gpu True'
+    if [[ $2 == "gpu" ]]; then
+        cpu=''
+    fi
+    conda activate ED
+    cd ED
+
+    printf "Running EfficientDerain v3_rain1400\n"
+    python ./validation.py \
+        --load_name "./models/v3_rain1400/v3_rain1400.pth" \
+        --save_name "../images/output/ED-v3rain1400" \
+        --baseroot "../images" \
+        $cpu
+
+
+)
+fi
+if [[ $model == "ED-v4rain1400" ]]; then
+(
+    cpu='--no_gpu True'
+    if [[ $2 == "gpu" ]]; then
+        cpu=''
+    fi
+    conda activate ED
+    cd ED
+
+    printf "Running EfficientDerain v4_SPA\n"
+    python ./validation.py \
+        --load_name "./models/v4_rain1400/v4_rain1400.pth" \
+        --save_name "../images/output/ED-v4rain1400" \
         --baseroot "../images" \
         $cpu
 
