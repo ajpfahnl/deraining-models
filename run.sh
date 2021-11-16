@@ -93,6 +93,13 @@ if [[ $1 == "setup" ]]; then
         cd output
         mkdir -p ${models_versions[@]}
     fi
+
+    if [[ $2 == "images-files" ]]; then
+        # setup files for processing images in images directory
+        cp sample_copy.sh images/copy.sh
+        cp sample_Metrics.ipynb images/Metrics.ipynb
+        cp sample_RunModels.ipynb images/RunModels.ipynb
+    fi
 )
 fi
 
