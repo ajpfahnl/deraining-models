@@ -14,8 +14,9 @@ This assumes
 Here's a sample workflow using the `run.sh` script:
  1. `./run.sh` to see the options.
  2. `./run.sh setup models`: modify SOTAs for testing locally. Make sure to download and add the pretrained models afterwards (check the messages after running this command).
- 3. `./run.sh setup conda`: set up conda environments. `./run.sh setup condarm` to remove the environments created.
+ 3. OPTIONAL if only running with Google Colab: `./run.sh setup conda`: set up conda environments. `./run.sh setup condarm` to remove the environments created.
  4. `./run.sh setup images`: Set up the testing image directories.
+ 5. `./run.sh setup images-files`: Set up files used to run models, analyze derained outputs, and more in the `images` directory.
  5. Add rainy images to `images/rainy-orig` and, optionally, clean images to `images/clean-orig`. You can try testing with `1.jpg` in [sample_images](sample_images).
  6. `./preprocess.py` to convert images to widths and heights of multiples of 4.
  7. `./run.sh [MPRNet | MSPFN | RCDNet | SPANet | ED | HRR | DGNL]`: Run the SOTAs.
@@ -23,18 +24,20 @@ Here's a sample workflow using the `run.sh` script:
 
 To compare images with SSIM and PSNR, use the [compare_images.py](compare_images.py) program.
 ```
-usage: compare_images.py [-h] [--single] [--display] [--save] [-p PARTICULAR] model
+usage: compare_images.py [-h] [--single] [--display] [--save] [-p PARTICULAR] [-c CLEAN_FORMAT] model
 
-Compare with PSNR and SSIM. Example command:./compare_images.py ED-v3 --single --save -p Cordele_0-0,Base_Cam_0-0,Hualien_0-0,Hualien_0-2,Hualien_0-3,Marunuma_Alt_0-0,Marunuma_Alt_0-1,Geiranger_0-0,Geiranger_0-1,Miami_County_0-0,Fort_Lauderdale_1-0,Fort_Lauderdale_1-1
+Compare with PSNR and SSIM. Example command:./compare_images.py ED-v3 --single --save -p Cordele_0-0,Base_Cam_0-0,Hualien_0-0
 
 positional arguments:
-  model                 Model whose outputs to test. Choose from MPRNet, MSPFN, RCDNet-spa, RCDNet-rain100h, SPANet, ED-v4, ED-v3
+  model                 Model whose outputs to test. Choose from MPRNet, MSPFN, RCDNet-spa, RCDNet-rain100h, SPANet, ED-v4, ED-v3, HRR, DGNL, ED-v3rain100h, ED-v4rain100h, ED-v3rain1400, ED-v4rain1400
 
 optional arguments:
   -h, --help            show this help message and exit
   --single              Only process one image from each scene
   --display             Display first and last image groupings for each scene
-  --save                Save metrics to csv files in ./images/metrics/ (create this directory first)
+  --save                Save metrics to csv files in ./images/metrics/
   -p PARTICULAR, --particular PARTICULAR
-                        Particular scenes to parse separated by commas
+                        Particular scenes to parse
+  -c CLEAN_FORMAT, --clean_format CLEAN_FORMAT
+                        Clean/GT (ground truth) input format. Choose from one, one2one
 ```

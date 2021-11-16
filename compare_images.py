@@ -197,7 +197,7 @@ if __name__ == "__main__":
     models_str = ", ".join(ImgCompare.models)
     clean_opts_str = ", ".join(ImgCompare.clean_opts)
     parser = argparse.ArgumentParser(description="Compare with PSNR and SSIM. Example command:"
-        "./compare_images.py ED-v3 --single --save -p Cordele_0-0,Base_Cam_0-0,Hualien_0-0,Hualien_0-2,Hualien_0-3,Marunuma_Alt_0-0,Marunuma_Alt_0-1,Geiranger_0-0,Geiranger_0-1,Miami_County_0-0,Fort_Lauderdale_1-0,Fort_Lauderdale_1-1"
+        "./compare_images.py ED-v3 --single --save -p Cordele_0-0,Base_Cam_0-0,Hualien_0-0"
     )
     parser.add_argument('model', type=str, help=f'Model whose outputs to test. Choose from {models_str}')
     parser.add_argument('--single', action='store_true', help=f'Only process one image from each scene')
