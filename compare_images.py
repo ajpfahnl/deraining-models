@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import cv2
 import matplotlib.pyplot as plt
+from numpy.lib.arraysetops import isin
 from skimage.metrics import structural_similarity as ssim
 from skimage.metrics import peak_signal_noise_ratio as psnr
 import numpy as np
@@ -13,7 +14,8 @@ import matplotlib.pyplot as plt
 import re
 
 class ImgCompare():
-    models = ["MPRNet", "MSPFN", "RCDNet-spa", "RCDNet-rain100h", "SPANet", "ED-v4", "ED-v3", "HRR", "DGNL"]
+    models = ["MPRNet", "MSPFN", "RCDNet-spa", "RCDNet-rain100h", "SPANet", "ED-v4", "ED-v3", "HRR", "DGNL", "ED-v3rain100h", "ED-v4rain100h", "ED-v3rain1400", "ED-v4rain1400"]
+    clean_opts = ["one", "one2one"]
 
     def load_image(self, path):
         img = cv2.imread(path)
@@ -24,12 +26,20 @@ class ImgCompare():
     def path_from_stem(self, folder: Path, stem: str):
         return list(folder.glob(f'{stem}*'))[0]
 
-    def __init__(self, model: str, single: bool=False, progress_func=tqdm, particulars=None):
+    def __init__(self, model: str, single: bool=False, progress_func=tqdm, particulars=None, clean="one"):
+        '''
+        clean option can be "one" or "one2one"
+        '''
         if model not in self.models:
             models_str = ", ".join(self.models)
             print(f"Invalid model: {model}. Please choose from {models_str}")
             exit(1)
+        if clean not in ["one", "one2one"]:
+            clean_opts_str = ", ".join(self.clean_opts)
+            print(f"Invalid clean option. Please choose from {clean_opts_str}")
+        
         self.model = model
+        self.clean = clean
         self.single = single
         self.progress_func = progress_func
 
@@ -54,7 +64,10 @@ class ImgCompare():
                 else:
                     R_stems[img_name] = [img_stem]
             elif flag == 'C':
-                C_stems[img_name] = img_stem
+                if img_name in C_stems:
+                    C_stems[img_name].append(img_stem)
+                else:
+                    C_stems[img_name] = [img_stem]
             elif flag == 'P':
                 P_stems[img_name] = img_stem
             else:
@@ -106,16 +119,20 @@ class ImgCompare():
             count_scene = 0
 
             print(f'Processing {name}')
-            clean_path = self.path_from_stem(Path('./images/rainy/'), self.C_stems[name])
 
-            for stem in self.progress_func(self.R_stems[name]):
+            if self.clean == "one":
+                clean_path = self.path_from_stem(Path('./images/rainy/'), self.C_stems[name][0])
+
+            for i, rstem in enumerate(self.progress_func(self.R_stems[name])):
+                if self.clean == "one2one":
+                   clean_path = self.path_from_stem(Path('./images/rainy/'), self.C_stems[name][i]) 
                 metrics_frame = np.zeros(4)
 
                 count += 1
                 count_scene += 1
 
-                rainy_path = self.path_from_stem(Path('./images/rainy/'), stem)
-                derained_path = self.path_from_stem(Path(f'./images/output/{self.model}/'), stem)
+                rainy_path = self.path_from_stem(Path('./images/rainy/'), rstem)
+                derained_path = self.path_from_stem(Path(f'./images/output/{self.model}/'), rstem)
 
                 clean_img = self.load_image(str(clean_path)) / 255.0
                 rainy_img = self.load_image(str(rainy_path)) / 255.0
@@ -129,7 +146,7 @@ class ImgCompare():
                 metrics_scene += metrics_frame
 
                 if save:
-                    self.write_metrics(mfile, stem, metrics_frame)
+                    self.write_metrics(mfile, rstem, metrics_frame)
 
                 if display_groups and count_scene in [1, len(self.R_stems[name])]:
                     plt.imshow(np.hstack((clean_img, rainy_img, derained_img)))
@@ -158,6 +175,7 @@ class ImgCompare():
 
 if __name__ == "__main__":
     models_str = ", ".join(ImgCompare.models)
+    clean_opts_str = ", ".join(ImgCompare.clean_opts)
     parser = argparse.ArgumentParser(description="Compare with PSNR and SSIM. Example command:"
         "./compare_images.py ED-v3 --single --save -p Cordele_0-0,Base_Cam_0-0,Hualien_0-0,Hualien_0-2,Hualien_0-3,Marunuma_Alt_0-0,Marunuma_Alt_0-1,Geiranger_0-0,Geiranger_0-1,Miami_County_0-0,Fort_Lauderdale_1-0,Fort_Lauderdale_1-1"
     )
@@ -166,8 +184,12 @@ if __name__ == "__main__":
     parser.add_argument('--display', action='store_true', help=f'Display first and last image groupings for each scene')
     parser.add_argument('--save', action='store_true', help=f'Save metrics to csv files in ./images/metrics/')
     parser.add_argument('-p', '--particular', type=str, help='Particular scenes to parse')
+    parser.add_argument('-c', '--clean_format', type=str, help=f'Clean/GT (ground truth) input format. Choose from {clean_opts_str}')
     args = parser.parse_args()
-    particulars = args.particular.split(',')
+    if isinstance(args.particular, str):
+        particulars = args.particular.split(',')
+    else:
+        particulars = None
 
-    ic = ImgCompare(args.model, args.single, particulars=particulars)
+    ic = ImgCompare(args.model, args.single, particulars=particulars, clean=args.clean_format)
     ic.find_metrics(display_groups=args.display, save=args.save)
