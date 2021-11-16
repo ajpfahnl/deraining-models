@@ -64,6 +64,24 @@ class ImgCompare():
                 else:
                     R_stems[img_name] = [img_stem]
             elif flag == 'C':
+                pass
+            elif flag == 'P':
+                pass
+            else:
+                print(f"Encountered invalid flag for {impath}", file=sys.stderr)
+        
+        for impath in Path(f'./images/rainy/').glob('*.png'):
+            scene_name, view, _, flag, _= str(impath.name).split('-')
+            img_stem = str(impath.stem)
+            img_stem = prog.match(img_stem).group(0)
+            img_name = "-".join([scene_name, view])
+
+            if (particulars is not None) and (img_name not in particulars):
+                continue
+
+            if flag == 'R':
+                pass
+            elif flag == 'C':
                 if img_name in C_stems:
                     C_stems[img_name].append(img_stem)
                 else:
@@ -78,6 +96,8 @@ class ImgCompare():
         self.C_stems = C_stems
         self.R_stems = R_stems
         self.P_stems = P_stems
+
+        print(f"{len(C_stems[img_name])} GTs and {len(R_stems[img_name])} derained images")
 
     def print_metrics(self, metrics):
         avg_psnr_rainy_gt, avg_psnr_derained_gt, avg_ssim_rainy_gt, avg_ssim_derained_gt = metrics
@@ -184,7 +204,7 @@ if __name__ == "__main__":
     parser.add_argument('--display', action='store_true', help=f'Display first and last image groupings for each scene')
     parser.add_argument('--save', action='store_true', help=f'Save metrics to csv files in ./images/metrics/')
     parser.add_argument('-p', '--particular', type=str, help='Particular scenes to parse')
-    parser.add_argument('-c', '--clean_format', type=str, help=f'Clean/GT (ground truth) input format. Choose from {clean_opts_str}')
+    parser.add_argument('-c', '--clean_format', type=str, default='one', help=f'Clean/GT (ground truth) input format. Choose from {clean_opts_str}')
     args = parser.parse_args()
     if isinstance(args.particular, str):
         particulars = args.particular.split(',')
