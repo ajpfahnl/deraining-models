@@ -1,10 +1,15 @@
 # Deraining SOTAs
 
-This repo is intended to allow images to be run on various SOTAs quickly and easily on a local development environment. This is a crude DIY implementation and has only been tested on MacOS. Each deraining model has its own conda environment, and the specifics of each can be found in [conda-envs](conda-envs). 
+This repo is intended to allow images to be run on various SOTAs quickly and easily. This is a crude DIY implementation and has only been tested on MacOS and Google Colab. Each deraining model has its own conda environment, all of which can be created as described in the setup steps below.
 
-You can run all models in Google Colab with the [RunModels.ipynb](./RunModels.ipynb) notebook. Make sure to change the working directory to wherever you've decided to place this repo in your Google Drive.
-
-__Exception__: SPANet is set up so that the model runs only on Google Colab.
+The following deraining models are included:
+ * [MPRNet](https://github.com/swz30/MPRNet)
+ * [MSPFN](https://github.com/kuijiang0802/MSPFN)
+ * [RCDNet](https://github.com/hongwang01/RCDNet)
+ * [SPANet](https://github.com/stevewongv/SPANet)
+ * [EfficientDeRain](https://github.com/tsingqguo/efficientderain)
+ * [HeavyRainRemoval](https://github.com/liruoteng/HeavyRainRemoval)
+ * [DGNL-Net](https://github.com/xw-hu/DGNL-Net)
 
 ## Requirements
 This assumes 
@@ -16,7 +21,10 @@ Here's a sample workflow using the `run.sh` script:
  2. `./run.sh setup models`: modify SOTAs for testing locally. Make sure to download and add the pretrained models afterwards (check the messages after running this command).
  3. OPTIONAL if only running with Google Colab: `./run.sh setup conda`: set up conda environments. `./run.sh setup condarm` to remove the environments created.
  4. `./run.sh setup images`: Set up the testing image directories.
- 5. `./run.sh setup images-files`: Set up files used to run models, analyze derained outputs, and more in the `images` directory.
+ 5. `./run.sh setup images-files`: Set up files used to run models, analyze derained outputs, and more in the `images` directory. Includes
+    * [RunModels.ipynb](./sample_RunModels.ipynb) which allows for all models to be run in a Jupyter notebook (tested on Google Colab).
+    * [Metrics.ipynb](./sample_Metrics.ipynb) which calculates PSNR and SSIM of outputs relative to GTs (if they exist).
+    * [copy.sh](./sample_copy.sh) which provides a sample method for copying images into the `image` directory.
  5. Add rainy images to `images/rainy-orig` and, optionally, clean images to `images/clean-orig`. You can try testing with `1.jpg` in [sample_images](sample_images).
  6. `./preprocess.py` to convert images to widths and heights of multiples of 4.
  7. `./run.sh [MPRNet | MSPFN | RCDNet | SPANet | ED | HRR | DGNL]`: Run the SOTAs.
