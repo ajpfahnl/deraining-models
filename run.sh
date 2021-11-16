@@ -29,9 +29,14 @@ if [[ $1 == "setup" ]]; then
 (
     # conda envs
     if [[ $2 == "conda" ]]; then
-        for m in ${models[@]}; do
-            conda env create -f conda-envs/conda-${m}.yml || echo "${m} conda environment file does not exist"
-        done
+        ( conda create -n RCDNet -y python=3.6 pytorch=0.4.1 cuda90 torchvision=0.2.0 imageio numpy opencv scikit-image tqdm scipy=1.2.1 matplotlib h5py ipython -c pytorch )
+        ( conda create -n MSPFN -y python=3.6 tensorflow-gpu=1.12.0 opencv tqdm matplotlib ipykernel )
+        ( conda create -n ED -y python=3.6 pytorch=1.6.0 torchvision=0.7.0 opencv scikit-image=0.17.2 -c pytorch )
+        ( conda create -n MPRNet -y python=3.7 pytorch=1.1 torchvision=0.3 cudatoolkit=9.0 matplotlib scikit-image opencv yacs joblib natsort h5py tqdm -c pytorch )
+        ( conda create -n HRR -y python=2.7 pytorch=0.4.1 cuda90 torchvision=0.2.0 tqdm scikit-image opencv numpy pip -c pytorch )
+        ( conda activate HRR; pip install guided-filter-pytorch tensorboard_logger )
+        ( conda create -n DGNL -y python=3.5 pytorch==1.0.1 torchvision==0.2.2 -c pytorch )
+        ( conda create -n SPANet -y python=3.7 opencv cupy tensorboardx progressbar2 scikit-image ffmpeg pytorch==1.2.0 torchvision==0.4.0 -c pytorch )
     fi
 
     if [[ $2 == "condarm" ]]; then
