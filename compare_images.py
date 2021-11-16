@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import cv2
 import matplotlib.pyplot as plt
-from numpy.lib.arraysetops import isin
 from skimage.metrics import structural_similarity as ssim
 from skimage.metrics import peak_signal_noise_ratio as psnr
 import numpy as np
