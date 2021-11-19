@@ -152,8 +152,8 @@ def get_files(path):
 
     for prainy, pclean in zip(sorted(path_rainy.glob('?*.?*')), sorted(path_gt.glob('?*.?*'))):
         ret.append([str(prainy), str(pclean)])
-    for pair in ret:
-        print(pair[0], pair[1])
+    # for pair in ret:
+    #     print(pair[0], pair[1])
     return ret
 
 '''
