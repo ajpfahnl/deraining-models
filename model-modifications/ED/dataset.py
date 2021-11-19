@@ -93,6 +93,14 @@ class DenoisingDataset(Dataset):
         img_gt = cv2.imread(self.imglist[index][1])
         img_rainy = cv2.cvtColor(img_rainy, cv2.COLOR_BGR2RGB)
         img_gt = cv2.cvtColor(img_gt, cv2.COLOR_BGR2RGB)
+
+        h, w, _ = img_rainy.shape
+        ts=256
+        padw = ts-w if w<ts else 0
+        padh = ts-h if h<ts else 0
+        if padw!=0 or padh!=0:
+            img_rainy = np.pad(img_rainy, ((0, padh), (0, padw), (0, 0)), mode='reflect')
+            img_gt = np.pad(img_gt, ((0, padh), (0, padw), (0, 0)), mode='reflect')
         
         if self.rainaug:
             img_rainy, img_gt = self.rain_aug(img_rainy, img_gt)
