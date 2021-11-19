@@ -14,7 +14,6 @@ class RandomCrop(object):
     def __init__(self, image_size, crop_size):
         self.ch, self.cw = crop_size
         ih, iw = image_size
-        print(ih, iw)
 
         self.h1 = random.randint(0, ih - self.ch)
         self.w1 = random.randint(0, iw - self.cw)
