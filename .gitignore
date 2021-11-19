@@ -1,5 +1,6 @@
 old
 images
+images-train
 
 # MPRNet
 MPRNet/Deraining/pretrained_models/model_deraining.pth
@@ -23,7 +24,8 @@ models/
 HRR/.ckpt
 
 # Google Drive
-Icon
+Icon
+
 
 
 # Byte-compiled / optimized / DLL files
