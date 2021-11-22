@@ -24,9 +24,7 @@ models/
 HRR/.ckpt
 
 # Google Drive
-Icon
-
-
+Icon
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
